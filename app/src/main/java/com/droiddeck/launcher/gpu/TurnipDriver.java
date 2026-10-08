@@ -6,6 +6,7 @@ import android.os.Environment;
 import android.util.Log;
 
 import com.droiddeck.launcher.R;
+import com.droiddeck.launcher.core.DeviceSupport;
 import com.droiddeck.launcher.core.FileUtils;
 import com.droiddeck.launcher.core.TarZst;
 import com.droiddeck.launcher.session.SessionPrefs;
@@ -337,6 +338,13 @@ public final class TurnipDriver {
             if (forced.startsWith("system")) return null;
             if (forced.startsWith("a8")) return DRIVER_A8XX;
             if (forced.startsWith("a7")) return DRIVER_A7XX;
+        }
+        // Turnip only drives KGSL: on any other GPU it loads, finds no device and the session is
+        // black. The vendor's own driver is the only one that can put frames on the screen there,
+        // and Mali's has every extension the compositor's dma-buf import needs.
+        if (!DeviceSupport.INSTANCE.adreno()) {
+            Log.i(TAG, "not an Adreno (" + (DeviceSupport.INSTANCE.mali() ? "Mali" : "unknown GPU") + "); compositor on the system Vulkan driver");
+            return null;
         }
         String model = gpuModel();
         Log.i(TAG, "gpu model: " + (model == null ? "unknown" : model));

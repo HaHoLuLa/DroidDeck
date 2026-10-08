@@ -18,6 +18,14 @@ object DeviceSupport {
     fun adreno(): Boolean =
         File("/sys/class/kgsl/kgsl-3d0").exists() || File("/vendor/lib64/hw/vulkan.adreno.so").exists()
 
+    /**
+     * An Arm Mali on the vendor's kbase kernel driver (Exynos 2100's G78, Tensor's G78/G710): the
+     * device node apps may open, or the vendor Vulkan driver. Mesa's Panfrost cannot run here - it
+     * wants a DRM render node, which kbase does not have - so only the vendor driver draws on it.
+     */
+    fun mali(): Boolean =
+        File("/dev/mali0").exists() || File("/vendor/lib64/hw/vulkan.mali.so").exists()
+
     /** The chip as the device names it, for the card that explains the refusal. */
     fun gpuName(context: Context): String {
         val soc = if (Build.VERSION.SDK_INT >= 31) Build.SOC_MODEL.takeIf { it.isNotBlank() && it != Build.UNKNOWN } else null
